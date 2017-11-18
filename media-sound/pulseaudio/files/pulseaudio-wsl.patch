@@ -1,0 +1,10 @@
+--- pulseaudio-10.0/src/pulsecore/mutex-posix.c	2016-08-23 08:50:11.000000000 -0400
++++ pulseaudio-10.0-new/src/pulsecore/mutex-posix.c	2017-11-16 22:18:38.782163500 -0500
+@@ -20,6 +20,7 @@
+ #ifdef HAVE_CONFIG_H
+ #include <config.h>
+ #endif
++#undef HAVE_PTHREAD_PRIO_INHERIT
+ 
+ #include <pthread.h>
+ #include <errno.h>
