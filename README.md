@@ -4,7 +4,7 @@ This repository contains patches for running Gentoo on WSL.
 
 #### Installing Gentoo on WSL
 
-Following the instruction https://wiki.archlinux.org/index.php/Install_on_WSL, first install any of WSL apps from Windows store. 
+The following steps basically follows the instruction https://wiki.archlinux.org/index.php/Install_on_WSL. 
 
 1. Installing a Linux instance: Execute the app and wait for the download to complete. Close window when prompt asks new user name. 
 2. Download Gentoo stage3: Run app again, create folder `/root/stage3` download Gentoo  through `https://www.gentoo.org/downloads`. Untar to the folder and close window when done. 
