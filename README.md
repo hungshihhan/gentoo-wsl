@@ -28,3 +28,7 @@ localedef: ../sysdeps/unix/sysv/linux/spawni.c:360: __spawnix: Assertionec >= 0'
 ```
 # emerge --ask --verbose media-sound/pulseaudio::wsl
 ```
+4. Emacs failed to build https://github.com/Microsoft/WSL/issues/1664
+```
+# bash -c "echo 0 > /proc/sys/kernel/randomize_va_space"
+```
