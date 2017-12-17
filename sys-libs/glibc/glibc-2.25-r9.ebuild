@@ -125,6 +125,8 @@ src_prepare() {
 	cd "${S}"
 
 	epatch "${FILESDIR}"/2.19/${PN}-2.19-ia64-gcc-4.8-reloc-hack.patch #503838
+	epatch "${FILESDIR}"/0001-Don-t-use-IFUNC-resolver-for-longjmp-or-system-in-li.patch
+	epatch "${FILESDIR}"/0001-Revert-linux-spawni.c-simplify-error-reporting-to-pa.patch
 
 	if use hardened ; then
 		# We don't enable these for non-hardened as the output is very terse --
