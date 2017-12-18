@@ -1,17 +1,6 @@
-From ac8a2ae80345fbd494b3e459014da3099d0af678 Mon Sep 17 00:00:00 2001
-From: Patrick Stewart <patrick@rfcreations.com>
-Date: Tue, 12 Sep 2017 20:35:51 +0100
-Subject: [PATCH] Revert "linux: spawni.c: simplify error reporting to parent"
-
-This reverts commit 4b4d4056bb154603f36c6f8845757c1012758158.
----
- sysdeps/unix/sysv/linux/spawni.c | 72 ++++++++++++++++++++++++++--------------
- 1 file changed, 47 insertions(+), 25 deletions(-)
-
-diff --git a/sysdeps/unix/sysv/linux/spawni.c b/sysdeps/unix/sysv/linux/spawni.c
-index c56f894a82..29083e0998 100644
---- a/sysdeps/unix/sysv/linux/spawni.c
-+++ b/sysdeps/unix/sysv/linux/spawni.c
+diff -Nur glibc-2.25.orig/sysdeps/unix/sysv/linux/spawni.c glibc-2.25/sysdeps/unix/sysv/linux/spawni.c
+--- glibc-2.25.orig/sysdeps/unix/sysv/linux/spawni.c	2017-11-30 12:39:21.087571000 +0900
++++ glibc-2.25/sysdeps/unix/sysv/linux/spawni.c	2017-11-30 14:04:39.750003400 +0900
 @@ -17,7 +17,6 @@
     <http://www.gnu.org/licenses/>.  */
  
@@ -46,7 +35,7 @@ index c56f894a82..29083e0998 100644
    sigset_t oldmask;
    const char *file;
    int (*exec) (const char *, char *const *, char *const *);
-@@ -87,7 +86,6 @@ struct posix_spawn_args
+@@ -87,7 +86,6 @@
    ptrdiff_t argc;
    char *const *envp;
    int xflags;
@@ -54,18 +43,19 @@ index c56f894a82..29083e0998 100644
  };
  
  /* Older version requires that shell script without shebang definition
-@@ -124,6 +122,10 @@ __spawni_child (void *arguments)
+@@ -124,8 +122,11 @@
    struct posix_spawn_args *args = arguments;
    const posix_spawnattr_t *restrict attr = args->attr;
    const posix_spawn_file_actions_t *file_actions = args->fa;
 +  int p = args->pipe[1];
-+  int ret;
-+
-+  close_not_cancel (args->pipe[0]);
+   int ret;
  
++  close_not_cancel (args->pipe[0]);
++
    /* The child must ensure that no signal handler are enabled because it shared
       memory with parent, so the signal disposition must be either SIG_DFL or
-@@ -202,6 +204,17 @@ __spawni_child (void *arguments)
+      SIG_IGN.  It does by iterating over all signals and although it could
+@@ -199,6 +200,17 @@
  	{
  	  struct __spawn_action *action = &file_actions->__actions[cnt];
  
@@ -83,7 +73,7 @@ index c56f894a82..29083e0998 100644
  	  switch (action->tag)
  	    {
  	    case spawn_do_close:
-@@ -268,7 +281,6 @@ __spawni_child (void *arguments)
+@@ -266,7 +278,6 @@
    __sigprocmask (SIG_SETMASK, (attr->__flags & POSIX_SPAWN_SETSIGMASK)
  		 ? &attr->__ss : &args->oldmask, 0);
  
@@ -91,7 +81,7 @@ index c56f894a82..29083e0998 100644
    args->exec (args->file, args->argv, args->envp);
  
    /* This is compatibility function required to enable posix_spawn run
-@@ -276,13 +288,14 @@ __spawni_child (void *arguments)
+@@ -274,13 +285,14 @@
       (2.15).  */
    maybe_script_execute (args);
  
@@ -112,7 +102,7 @@ index c56f894a82..29083e0998 100644
    _exit (SPAWN_ERROR);
  }
  
-@@ -299,6 +312,9 @@ __spawnix (pid_t * pid, const char *file,
+@@ -297,6 +309,9 @@
    struct posix_spawn_args args;
    int ec;
  
@@ -122,7 +112,7 @@ index c56f894a82..29083e0998 100644
    /* To avoid imposing hard limits on posix_spawn{p} the total number of
       arguments is first calculated to allocate a mmap to hold all possible
       values.  */
-@@ -330,16 +346,17 @@ __spawnix (pid_t * pid, const char *file,
+@@ -328,16 +343,17 @@
    void *stack = __mmap (NULL, stack_size, prot,
  			MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
    if (__glibc_unlikely (stack == MAP_FAILED))
@@ -144,19 +134,18 @@ index c56f894a82..29083e0998 100644
    args.file = file;
    args.exec = exec;
    args.fa = file_actions;
-@@ -353,8 +370,9 @@ __spawnix (pid_t * pid, const char *file,
+@@ -351,7 +367,9 @@
  
    /* The clone flags used will create a new child that will run in the same
       memory space (CLONE_VM) and the execution of calling thread will be
 -     suspend until the child calls execve or _exit.
--
 +     suspend until the child calls execve or _exit.  These condition as
 +     signal below either by pipe write (_exit with SPAWN_ERROR) or
 +     a successful execve.
+ 
       Also since the calling thread execution will be suspend, there is not
       need for CLONE_SETTLS.  Although parent and child share the same TLS
-      namespace, there will be no concurrent access for TLS variables (errno
-@@ -362,18 +380,22 @@ __spawnix (pid_t * pid, const char *file,
+@@ -360,18 +378,22 @@
    new_pid = CLONE (__spawni_child, STACK (stack, stack_size), stack_size,
  		   CLONE_VM | CLONE_VFORK | SIGCHLD, &args);
  
@@ -183,6 +172,3 @@ index c56f894a82..29083e0998 100644
    if ((ec == 0) && (pid != NULL))
      *pid = new_pid;
  
--- 
-2.14.1
-

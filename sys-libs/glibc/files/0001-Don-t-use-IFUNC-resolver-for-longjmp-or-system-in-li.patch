@@ -1,21 +1,6 @@
-From fc5ad7024c620cdfe9b76e94638aac83b99c5bf8 Mon Sep 17 00:00:00 2001
-From: Andreas Schwab <schwab@suse.de>
-Date: Tue, 8 Aug 2017 16:21:58 +0200
-Subject: [PATCH] Don't use IFUNC resolver for longjmp or system in libpthread
- (bug 21041)
-
-Unlike the vfork forwarder and like the fork forwarder as in bug 19861,
-there won't be a problem when the compiler does not turn this into a tail
-call.
----
- nptl/pt-longjmp.c | 31 ++++++++++---------------------
- nptl/pt-system.c  | 24 ++++++++----------------
- 3 files changed, 18 insertions(+), 37 deletions(-)
-
-diff --git a/nptl/pt-longjmp.c b/nptl/pt-longjmp.c
-index 2ef757e687f..8f3c6b3a09f 100644
---- a/nptl/pt-longjmp.c
-+++ b/nptl/pt-longjmp.c
+diff -Nur glibc-2.25.orig/nptl/pt-longjmp.c glibc-2.25/nptl/pt-longjmp.c
+--- glibc-2.25.orig/nptl/pt-longjmp.c	2017-02-06 00:28:43.000000000 +0900
++++ glibc-2.25/nptl/pt-longjmp.c	2017-11-30 12:58:02.410517900 +0900
 @@ -25,21 +25,14 @@
     symbol in libpthread, but the historical ABI requires it.  For static
     linking, there is no need to provide anything here--the libc version
@@ -44,7 +29,7 @@ index 2ef757e687f..8f3c6b3a09f 100644
  
  static void __attribute__ ((noreturn, used))
  longjmp_compat (jmp_buf env, int val)
-@@ -47,14 +40,10 @@ longjmp_compat (jmp_buf env, int val)
+@@ -47,14 +40,10 @@
    __libc_longjmp (env, val);
  }
  
@@ -63,11 +48,10 @@ index 2ef757e687f..8f3c6b3a09f 100644
 +compat_symbol (libpthread, siglongjmp_alias, siglongjmp, GLIBC_2_0);
  
  #endif
-diff --git a/nptl/pt-system.c b/nptl/pt-system.c
-index f8ca6ba0d94..b30ddf2b398 100644
---- a/nptl/pt-system.c
-+++ b/nptl/pt-system.c
-@@ -25,29 +25,21 @@
+diff -Nur glibc-2.25.orig/nptl/pt-system.c glibc-2.25/nptl/pt-system.c
+--- glibc-2.25.orig/nptl/pt-system.c	2017-02-06 00:28:43.000000000 +0900
++++ glibc-2.25/nptl/pt-system.c	2017-11-30 13:01:25.803172300 +0900
+@@ -25,29 +25,22 @@
     libpthread, but the historical ABI requires it.  For static linking,
     there is no need to provide anything here--the libc version will be
     linked in.  For shared library ABI compatibility, there must be a
@@ -99,12 +83,9 @@ index f8ca6ba0d94..b30ddf2b398 100644
 -strong_alias (system_compat, system_ifunc)
 -
 -# endif  /* HAVE_IFUNC */
--
+ 
 -compat_symbol (libpthread, system_ifunc, system, GLIBC_2_0);
 +strong_alias (system_compat, system_alias)
 +compat_symbol (libpthread, system_alias, system, GLIBC_2_0);
  
  #endif
--- 
-2.14.1
-
