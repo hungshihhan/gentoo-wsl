@@ -32,3 +32,7 @@ localedef: ../sysdeps/unix/sysv/linux/spawni.c:360: __spawnix: Assertionec >= 0'
 ```
 # bash -c "echo 0 > /proc/sys/kernel/randomize_va_space"
 ```
+5. qtgui-5.11.1 emake failed on WSL: https://bugs.gentoo.org/669994
+```
+strip --remove-section=.note.ABI-tag /usr/lib/libQt5Core.so.5.11.1
+```
