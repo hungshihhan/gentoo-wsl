@@ -34,5 +34,5 @@ localedef: ../sysdeps/unix/sysv/linux/spawni.c:360: __spawnix: Assertionec >= 0'
 ```
 5. qtgui-5.11.1 emake failed on WSL: https://bugs.gentoo.org/669994
 ```
-# strip --remove-section=.note.ABI-tag /usr/lib/libQt5Core.so.5.11.1
+# find /lib /usr/lib /usr/libexec -name '*.so' | xargs strip --remove-section=.note.ABI-tag
 ```
