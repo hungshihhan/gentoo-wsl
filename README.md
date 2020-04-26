@@ -14,7 +14,7 @@ The following steps basically follow the instruction https://wiki.archlinux.org/
 #### Issues and workarounds
 
 ~~1. IPC not supported https://github.com/Microsoft/WSL/issues/992: Edit `/usr/lib64/python2.7/site-packages/_emerge/AbstractEbuildProcess.py` and set `_enable_ipc_daemon` to `False`. Do so for `python3.4`. These files are installed with `sys-apps/portage`. To disable ipc support for future update,~~
-- ~~Add `USE="-ipc"` in `/etc/portage/make.conf` ~~
+- ~~Add `USE="-ipc"` in `/etc/portage/make.conf`.~~
 - ~~Put `sys-apps/portage -ipc` in `/etc/portage/profile/package.use.force`.~~
 
 ~~2. `locale-gen` failed https://github.com/Microsoft/WSL/issues/1878:~~
